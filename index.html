@@ -35,7 +35,6 @@
         .btn-modal { border: none; padding: 16px; border-radius: 25px; width: 100%; cursor: pointer; font-weight: 700; font-family: inherit; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; }
         .btn-login { background: var(--secondary); color: white; }
         .btn-cloud-up { background: var(--primary); color: white; }
-        .btn-cloud-down { background: #636e72; color: white; }
         .btn-logout { background: #2d3436; color: white; margin-top: 15px; }
 
         /* HEADER */
@@ -56,7 +55,6 @@
         .member-info-left { display: flex; align-items: center; gap: 15px; }
         .avatar { width: 50px; height: 50px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; }
         
-        /* INPUT EXTRA */
         .extra-input-wrap { text-align: right; }
         .extra-input-wrap label { display: block; font-size: 0.6rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
         .input-extra { width: 70px; border: 2px solid #e2e8f0; border-radius: 10px; padding: 5px; font-family: inherit; font-weight: 700; text-align: center; color: var(--secondary); }
@@ -82,10 +80,14 @@
         .tools-area { display: none; }
         body.is-admin .login-area { display: none; }
         body.is-admin .tools-area { display: block; }
+
+        /* LOADING SPINNER */
+        #loading-msg { position: fixed; bottom: 20px; right: 20px; background: var(--secondary); color: white; padding: 10px 20px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; z-index: 10000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
+<div id="loading-msg">🔄 Sincronizando datos...</div>
 <div class="snow-container" id="snow"></div>
 
 <div id="login-overlay">
@@ -99,7 +101,7 @@
         <div class="tools-area">
             <h2>☁️ Nube Google</h2>
             <button class="btn-modal btn-cloud-up" onclick="saveToCloud()">📤 Guardar en Nube</button>
-            <button class="btn-modal btn-cloud-down" onclick="loadFromCloud()">📥 Cargar de Nube</button>
+            <p style="font-size: 0.7rem; color: #999;">Los cambios se verán en todos los dispositivos al guardar.</p>
             <button class="btn-modal btn-logout" onclick="logout()">Cerrar Sesión</button>
         </div>
     </div>
@@ -122,15 +124,15 @@
 </div>
 
 <script>
-    const CLAVE = "1234";
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHWctV_hVyTsDcwcbRbShCPQf8R0PeiBNPUasvqiZDv3Y4D4E58Ru2KwD9WnMAiKq5/exec"; 
+    const CLAVE = "1234+";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHWctV_hVyTsDcwcbRbShCPQf8R0PeiBNPUasvqiZDv3Y4D4E58Ru2KwD9WnMAiKq5/exec";
     
-    const integrantes = ["Eduardo", "Esperanza", "Yunuen", "Héctor", "Liliana", "Fabían", "Lalo", "Memo", "Alberto", "Cintya", "Uziel", "Adilenne", "Gibrán"];
+    const integrantes = ["Eduardo", "Esperanza", "Yunuen", "Héctor", "Liliana", "Fabían", "Lalo", "Memo", "Cintya", "Uziel", "Gibrán"];
     const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     const colores = ['#ff7675', '#00cec9', '#fab1a0', '#0984e3', '#fd79a8', '#6c5ce7', '#e17055', '#a29bfe', '#00b894'];
     
     let isAdmin = false;
-    let db = JSON.parse(localStorage.getItem('familia_ahorro_v4')) || {};
+    let db = {};
 
     function createSnow() {
         const snowContainer = document.getElementById('snow');
@@ -146,8 +148,32 @@
         }
     }
 
-    function init() {
+    // CARGA AUTOMÁTICA AL INICIAR
+    async function init() {
         createSnow();
+        const loader = document.getElementById('loading-msg');
+        loader.style.display = 'block';
+
+        // 1. Intentar cargar de la nube primero
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const text = await response.text();
+            if(text && text.length > 5) {
+                db = JSON.parse(text);
+                localStorage.setItem('familia_ahorro_v4', text);
+            } else {
+                // Si falla la nube, usar local
+                db = JSON.parse(localStorage.getItem('familia_ahorro_v4')) || {};
+            }
+        } catch (e) {
+            db = JSON.parse(localStorage.getItem('familia_ahorro_v4')) || {};
+        }
+
+        render();
+        loader.style.display = 'none';
+    }
+
+    function render() {
         const grid = document.getElementById('members-grid');
         grid.innerHTML = '';
         integrantes.forEach((name, i) => {
@@ -157,7 +183,6 @@
                 monthsHtml += `<div class="m-box" id="box-${i}-${m}" style="background:${st.f==='d'?'#fff5f5':(st.f==='p'?'#f0fff4':'#f8fafc')}"><span class="m-name">${mes}</span><button class="btn btn-s ${st.p?'active':''}" onclick="tS(${i},${m},this)">${st.p?'✅':'$100'}</button><button class="btn btn-m ${st.f==='d'?'owed':(st.f==='p'?'paid':'')}" onclick="tF(${i},${m},this)">${st.f==='d'?'DEBE':(st.f==='p'?'PAGÓ':'MULTA')}</button></div>`;
             });
 
-            // Recuperar saldo extra
             const extraVal = db[`extra-${i}`] || 0;
 
             grid.innerHTML += `
@@ -183,41 +208,17 @@
         });
     }
 
+    // FUNCIONES DE CONTROL
     function tS(mI, moI, btn) { if(!isAdmin) return; btn.classList.toggle('active'); btn.innerText = btn.classList.contains('active') ? "✅" : "$100"; save(mI, moI); calc(mI); }
+    function tF(mI, moI, btn) { if(!isAdmin) return; const box = document.getElementById(`box-${mI}-${moI}`); if (!btn.classList.contains('owed') && !btn.classList.contains('paid')) { btn.classList.add('owed'); btn.innerText = "DEBE"; box.style.background = "#fff5f5"; } else if (btn.classList.contains('owed')) { btn.classList.remove('owed'); btn.classList.add('paid'); btn.innerText = "PAGÓ"; box.style.background = "#f0fff4"; } else { btn.classList.remove('paid'); btn.innerText = "MULTA"; box.style.background = "#f8fafc"; } save(mI, moI); calc(mI); }
+    function save(mI, moI) { const bS = document.querySelector(`#box-${mI}-${moI} .btn-s`); const bM = document.querySelector(`#box-${mI}-${moI} .btn-m`); let fS = bM.classList.contains('owed') ? 'd' : (bM.classList.contains('paid') ? 'p' : 'n'); db[`${mI}-${moI}`] = { p: bS.classList.contains('active'), f: fS }; localStorage.setItem('familia_ahorro_v4', JSON.stringify(db)); }
+    function saveExtra(mI, val) { db[`extra-${mI}`] = parseFloat(val) || 0; localStorage.setItem('familia_ahorro_v4', JSON.stringify(db)); calc(mI); }
     
-    function tF(mI, moI, btn) { 
-        if(!isAdmin) return; 
-        const box = document.getElementById(`box-${mI}-${moI}`); 
-        if (!btn.classList.contains('owed') && !btn.classList.contains('paid')) { 
-            btn.classList.add('owed'); btn.innerText = "DEBE"; box.style.background = "#fff5f5"; 
-        } else if (btn.classList.contains('owed')) { 
-            btn.classList.remove('owed'); btn.classList.add('paid'); btn.innerText = "PAGÓ"; box.style.background = "#f0fff4"; 
-        } else { 
-            btn.classList.remove('paid'); btn.innerText = "MULTA"; box.style.background = "#f8fafc"; 
-        } 
-        save(mI, moI); calc(mI); 
-    }
-
-    function save(mI, moI) { 
-        const bS = document.querySelector(`#box-${mI}-${moI} .btn-s`); 
-        const bM = document.querySelector(`#box-${mI}-${moI} .btn-m`); 
-        let fS = bM.classList.contains('owed') ? 'd' : (bM.classList.contains('paid') ? 'p' : 'n'); 
-        db[`${mI}-${moI}`] = { p: bS.classList.contains('active'), f: fS }; 
-        localStorage.setItem('familia_ahorro_v4', JSON.stringify(db)); 
-    }
-
-    function saveExtra(mI, val) {
-        db[`extra-${mI}`] = parseFloat(val) || 0;
-        localStorage.setItem('familia_ahorro_v4', JSON.stringify(db));
-        calc(mI);
-    }
-
     function calc(mI) { 
         const card = document.querySelectorAll('.member-card')[mI]; 
         const s = card.querySelectorAll('.btn-s.active').length * 100; 
-        const fp = card.querySelectorAll('.btn-m.paid').length * 40; // <-- CAMBIADO A 40
+        const fp = card.querySelectorAll('.btn-m.paid').length * 40; 
         const extra = parseFloat(db[`extra-${mI}`]) || 0;
-        
         document.getElementById(`s-${mI}`).innerText = `$${s}`; 
         document.getElementById(`f-${mI}`).innerText = `$${fp}`; 
         document.getElementById(`t-${mI}`).innerText = `$${s + fp + extra}`; 
@@ -228,9 +229,7 @@
         let ts = 0, tf = 0, te = 0; 
         document.querySelectorAll('[id^="s-"]').forEach(e => ts += parseInt(e.innerText.replace('$',''))); 
         document.querySelectorAll('[id^="f-"]').forEach(e => tf += parseInt(e.innerText.replace('$',''))); 
-        // Sumar todos los extras de la DB
         for(let key in db) { if(key.startsWith('extra-')) te += parseFloat(db[key]) || 0; }
-
         document.getElementById('g-savings').innerText = `$${ts}`; 
         document.getElementById('g-fines').innerText = `$${tf}`; 
         document.getElementById('g-total').innerText = `$${ts + tf + te}`; 
@@ -238,35 +237,19 @@
 
     function openModal() { document.getElementById('login-overlay').style.display = 'flex'; }
     function closeModal() { document.getElementById('login-overlay').style.display = 'none'; }
-    
-    function checkPassword() { 
-        if(document.getElementById('pass-input').value === CLAVE){ 
-            isAdmin = true; 
-            document.body.classList.add('is-admin'); 
-            document.getElementById('lock-btn').innerText = "🔓"; 
-            document.querySelectorAll('.input-extra').forEach(i => i.disabled = false);
-            document.getElementById('pass-input').value = ""; 
-        } else { alert("Clave incorrecta"); } 
-    }
-    
-    function logout() { 
-        isAdmin = false; 
-        document.body.classList.remove('is-admin'); 
-        document.querySelectorAll('.input-extra').forEach(i => i.disabled = true);
-        closeModal(); 
-    }
+    function checkPassword() { if(document.getElementById('pass-input').value === CLAVE){ isAdmin = true; document.body.classList.add('is-admin'); document.getElementById('lock-btn').innerText = "🔓"; document.querySelectorAll('.input-extra').forEach(i => i.disabled = false); document.getElementById('pass-input').value = ""; } else { alert("Clave incorrecta"); } }
+    function logout() { isAdmin = false; document.body.classList.remove('is-admin'); document.querySelectorAll('.input-extra').forEach(i => i.disabled = true); closeModal(); }
 
     async function saveToCloud() {
         if(SCRIPT_URL.includes("TU_URL")) return alert("Configura la URL");
-        try { await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(db) }); alert("✅ Guardado."); } catch (e) { alert("❌ Error."); }
-    }
-    async function loadFromCloud() {
-        if(SCRIPT_URL.includes("TU_URL")) return alert("Configura la URL");
-        try {
-            const response = await fetch(SCRIPT_URL);
-            const text = await response.text();
-            if(text && text.length > 5) { db = JSON.parse(text); localStorage.setItem('familia_ahorro_v4', JSON.stringify(db)); location.reload(); }
-        } catch (e) { alert("❌ Error."); }
+        const loader = document.getElementById('loading-msg');
+        loader.innerText = "⬆️ Guardando en la nube...";
+        loader.style.display = 'block';
+        try { 
+            await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(db) }); 
+            alert("✅ Guardado exitoso. Todos los dispositivos verán los cambios al abrir la página."); 
+        } catch (e) { alert("❌ Error al guardar."); }
+        loader.style.display = 'none';
     }
 
     init();
