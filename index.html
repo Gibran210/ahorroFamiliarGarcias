@@ -7,66 +7,81 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --primary: #ff6b6b; --secondary: #4ecdc4; --accent: #ffe66d; 
-            --success: #70e000; --danger: #ff4757; --bg: #fdf2f2; --text: #2d3436; 
+            --primary: #ff7675; --secondary: #00cec9; --accent: #ffe66d; 
+            --success: #55efc4; --danger: #ff7675; 
+            /* Fondo azul noche profundo para resaltar la nieve */
+            --bg-gradient: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); 
+            --text: #2d3436; 
         }
         
         * { box-sizing: border-box; transition: all 0.25s ease; }
         
         body { 
-            font-family: 'Quicksand', sans-serif; background-color: var(--bg); 
-            background-image: radial-gradient(#ffccd5 0.5px, transparent 0.5px); 
-            background-size: 20px 20px; margin: 0; padding: 20px; color: var(--text);
+            font-family: 'Quicksand', sans-serif; 
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            margin: 0; padding: 20px; color: #f8fafc; /* Texto principal claro */
+            overflow-x: hidden;
         }
 
-        /* MODAL REDISEÑADO */
+        /* EFECTO DE NIEVE MEJORADO */
+        .snow-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999;
+        }
+        .snowflake {
+            position: fixed; top: -10px; color: white; font-size: 1.2em;
+            user-select: none; z-index: 9999;
+            animation: fall linear infinite;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+        }
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0.3; }
+        }
+
+        /* VENTANA MODAL */
         #login-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(45, 52, 54, 0.4); backdrop-filter: blur(10px); 
-            z-index: 1000; display: none; justify-content: center; align-items: center; 
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); 
+            z-index: 10000; display: none; justify-content: center; align-items: center; 
         }
         .login-box { 
             background: white; padding: 40px 30px; border-radius: 40px; text-align: center; 
             max-width: 380px; width: 92%; border: 8px solid var(--accent); position: relative;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            color: var(--text);
         }
         .close-x {
             position: absolute; top: 15px; right: 20px; font-size: 1.8rem;
             cursor: pointer; font-weight: 700; color: #dfe6e9; border: none; background: none;
         }
-        .close-x:hover { color: var(--danger); }
 
         .btn-modal { 
             border: none; padding: 16px; border-radius: 25px; width: 100%; 
             cursor: pointer; font-weight: 700; font-family: inherit; font-size: 1rem;
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            margin-bottom: 12px; box-shadow: 0 6px 0 rgba(0,0,0,0.05);
+            margin-bottom: 12px;
         }
-        .btn-modal:active { transform: translateY(3px); box-shadow: none; }
-        
         .btn-login { background: var(--secondary); color: white; }
         .btn-cloud-up { background: var(--primary); color: white; }
         .btn-cloud-down { background: #636e72; color: white; }
         .btn-logout { background: #2d3436; color: white; margin-top: 15px; }
 
-        .login-box input { 
-            width: 100%; padding: 18px; margin-bottom: 15px; border: 3px solid #f1f2f6; 
-            border-radius: 25px; text-align: center; font-family: inherit; font-size: 1.1rem;
-        }
-
-        /* HEADER */
-        .container { max-width: 1300px; margin: 0 auto; }
+        /* HEADER TRANSPARENTE (GLASSMORPHISM) */
+        .container { max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
         header { 
-            background: white; padding: 25px 35px; border-radius: 40px; 
-            box-shadow: 0 12px 0 rgba(0,0,0,0.02); margin-bottom: 40px; 
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);
+            padding: 25px 35px; border-radius: 40px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px; 
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
         }
-        .header-info h1 { margin: 0; font-size: 2rem; color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 12px; }
-        .header-info h1 img { height: 45px; }
+        .header-info h1 { margin: 0; font-size: 2rem; color: #fff; font-weight: 700; display: flex; align-items: center; gap: 12px; }
         
         .vault-wrap { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-        .v-card { background: #fff; padding: 12px 20px; border-radius: 25px; border: 3px solid #f8f8f8; text-align: center; min-width: 130px; }
-        .v-card.total { background: var(--secondary); border-color: #3dbfb7; color: white; }
+        .v-card { background: rgba(255, 255, 255, 0.95); padding: 12px 20px; border-radius: 25px; text-align: center; min-width: 130px; color: var(--text); }
+        .v-card.total { background: var(--secondary); color: white; }
         .v-card small { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
         .v-card b { font-size: 1.5rem; }
 
@@ -74,30 +89,34 @@
             background: var(--accent); border: none; width: 50px; height: 50px; 
             border-radius: 18px; cursor: pointer; font-size: 1.4rem; 
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 5px 0 #e6cc5c;
         }
 
-        /* CARDS */
+        /* GRID Y TARJETAS */
         .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
-        .member-card { background: white; border-radius: 40px; padding: 25px; box-shadow: 0 10px 0 rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
+        .member-card { 
+            background: rgba(255, 255, 255, 0.95); /* Tarjetas blancas sólidas para leer bien */
+            border-radius: 40px; padding: 25px; 
+            color: var(--text);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
         .member-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
         .avatar { width: 50px; height: 50px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; }
         
         .months-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        .m-box { background: #fafafa; border-radius: 20px; padding: 10px 5px; display: flex; flex-direction: column; gap: 6px; align-items: center; border: 2px solid #f5f5f5; }
-        .m-name { font-size: 0.75rem; font-weight: 700; color: #b2bec3; text-transform: uppercase; }
+        .m-box { background: #f8fafc; border-radius: 20px; padding: 10px 5px; display: flex; flex-direction: column; gap: 6px; align-items: center; border: 1px solid #e2e8f0; }
+        .m-name { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
         
         .btn { width: 90%; border: none; border-radius: 12px; padding: 6px 0; font-size: 0.7rem; font-weight: 800; cursor: default; pointer-events: none; }
         body.is-admin .btn { cursor: pointer; pointer-events: auto; }
-        .btn-s { background: #eee; color: #a4b0be; }
-        .btn-s.active { background: var(--success); color: white; box-shadow: 0 3px 0 #5dbd00; }
-        .btn-m { background: #eee; color: #a4b0be; }
-        .btn-m.owed { background: var(--danger); color: white; box-shadow: 0 3px 0 #d63031; }
-        .btn-m.paid { background: var(--accent); color: #856404; box-shadow: 0 3px 0 #e6cc5c; }
+        .btn-s { background: #e2e8f0; color: #94a3b8; }
+        .btn-s.active { background: #2ecc71; color: white; }
+        .btn-m { background: #e2e8f0; color: #94a3b8; }
+        .btn-m.owed { background: #e74c3c; color: white; }
+        .btn-m.paid { background: #f1c40f; color: #2d3436; }
         
-        .m-footer { margin-top: 25px; padding-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; border-top: 2px dashed #f1f2f6; }
+        .m-footer { margin-top: 25px; padding-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; border-top: 2px dashed #e2e8f0; }
         .stat { text-align: center; }
-        .stat span { display: block; font-size: 0.65rem; font-weight: 800; color: #a4b0be; text-transform: uppercase; }
+        .stat span { display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
         .stat b { font-size: 1.1rem; }
 
         .tools-area { display: none; }
@@ -107,22 +126,20 @@
 </head>
 <body>
 
+<div class="snow-container" id="snow"></div>
+
 <div id="login-overlay">
     <div class="login-box">
         <button class="close-x" onclick="closeModal()">✕</button>
-        
         <div class="login-area">
-            <h2 style="margin-top:0;">🔑 Acceso Admin</h2>
-            <input type="password" id="pass-input" placeholder="Contraseña">
+            <h2>🔑 Acceso Admin</h2>
+            <input type="password" id="pass-input" placeholder="Contraseña" style="width: 100%; padding: 15px; border-radius: 20px; border: 2px solid #eee; margin-bottom: 20px; text-align: center;">
             <button class="btn-modal btn-login" onclick="checkPassword()">Entrar</button>
         </div>
-
         <div class="tools-area">
-            <h2 style="margin-top:0;">☁️ Nube Google</h2>
-            <p style="font-size: 0.8rem; color: #888; margin-bottom: 20px;">Gestiona tus datos en Google Sheets</p>
+            <h2>☁️ Nube Google</h2>
             <button class="btn-modal btn-cloud-up" onclick="saveToCloud()">📤 Guardar en Nube</button>
             <button class="btn-modal btn-cloud-down" onclick="loadFromCloud()">📥 Cargar de Nube</button>
-            <hr style="border:none; border-top: 1px solid #eee; margin: 20px 0;">
             <button class="btn-modal btn-logout" onclick="logout()">Cerrar Sesión</button>
         </div>
     </div>
@@ -131,11 +148,12 @@
 <div class="container">
     <header>
         <div class="header-info">
-            <h1><img src="https://i.ibb.co/L5hY75k/piggy-bank-wing.png" alt="Icon"> Ahorro 2026</h1>
+            <h1><span>🐷</span> Ahorro Familiar Garcia 2026</h1>
+            <p style="margin:0; opacity: 0.8; font-weight: 600; font-size: 0.8rem; color: #cbd5e1;">Caja Familiar Navideña</p>
         </div>
         <div class="vault-wrap">
-            <div class="v-card"><small>💰 Ahorro</small><b id="g-savings">$0</b></div>
-            <div class="v-card"><small>⚠️ Multas</small><b id="g-fines">$0</b></div>
+            <div class="v-card"><small>💰 Ahorro</small><b id="g-savings" style="color:#2ecc71">$0</b></div>
+            <div class="v-card"><small>⚠️ Multas</small><b id="g-fines" style="color:#e74c3c">$0</b></div>
             <div class="v-card total"><small>✨ TOTAL</small><b id="g-total">$0</b></div>
             <button class="admin-unlock" id="lock-btn" onclick="openModal()">🔑</button>
         </div>
@@ -144,77 +162,68 @@
 </div>
 
 <script>
-    // --- CONFIGURACIÓN ---
-    const CLAVE = "1234";
+    const CLAVE = "admin123+";
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHWctV_hVyTsDcwcbRbShCPQf8R0PeiBNPUasvqiZDv3Y4D4E58Ru2KwD9WnMAiKq5/exec";
     
-    const integrantes = ["Eduardo", "Esperanza", "Yunuen", "Héctor", "Liliana", "Fabían", "Lalo", "Memo", "Alberto", "Cintya", "Uziel", "Adilenne", "Gibrán"];
+    const integrantes = ["EDUARDO", "ESPERANZA", "YUNUEN", "HECTOR", "LILIANA", "FABIAN", "LALO", "MEMO", "ALBERTO", "CINTYA", "UZIEL", "ADILENNE", "GIBRAN"];
     const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-    const colores = ['#ff6b6b', '#4ecdc4', '#ff9f43', '#6a89cc', '#f8a5c2', '#3dc1d3', '#e77f67', '#8e44ad', '#27ae60'];
+    const colores = ['#ff7675', '#00cec9', '#fab1a0', '#0984e3', '#fd79a8', '#6c5ce7', '#e17055', '#a29bfe', '#00b894'];
     
     let isAdmin = false;
     let db = JSON.parse(localStorage.getItem('familia_ahorro_v4')) || {};
 
+    // NIEVE
+    function createSnow() {
+        const snowContainer = document.getElementById('snow');
+        for (let i = 0; i < 70; i++) {
+            const flake = document.createElement('div');
+            flake.className = 'snowflake';
+            flake.innerHTML = '•';
+            flake.style.left = Math.random() * 100 + 'vw';
+            flake.style.animationDuration = (Math.random() * 3 + 4) + 's';
+            flake.style.opacity = Math.random();
+            flake.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            flake.style.animationDelay = Math.random() * 5 + 's';
+            snowContainer.appendChild(flake);
+        }
+    }
+
     function init() {
+        createSnow();
         const grid = document.getElementById('members-grid');
         grid.innerHTML = '';
         integrantes.forEach((name, i) => {
             let monthsHtml = '';
             meses.forEach((mes, m) => {
                 const st = db[`${i}-${m}`] || { p: false, f: 'n' };
-                monthsHtml += `<div class="m-box" id="box-${i}-${m}" style="background:${st.f==='d'?'#fff5f5':(st.f==='p'?'#f0fff4':'#fafafa')}"><span class="m-name">${mes}</span><button class="btn btn-s ${st.p?'active':''}" onclick="tS(${i},${m},this)">${st.p?'✅':'$100'}</button><button class="btn btn-m ${st.f==='d'?'owed':(st.f==='p'?'paid':'')}" onclick="tF(${i},${m},this)">${st.f==='d'?'DEBE':(st.f==='p'?'PAGÓ':'MULTA')}</button></div>`;
+                monthsHtml += `<div class="m-box" id="box-${i}-${m}" style="background:${st.f==='d'?'#fff5f5':(st.f==='p'?'#f0fff4':'#f8fafc')}"><span class="m-name">${mes}</span><button class="btn btn-s ${st.p?'active':''}" onclick="tS(${i},${m},this)">${st.p?'✅':'$100'}</button><button class="btn btn-m ${st.f==='d'?'owed':(st.f==='p'?'paid':'')}" onclick="tF(${i},${m},this)">${st.f==='d'?'DEBE':(st.f==='p'?'PAGÓ':'MULTA')}</button></div>`;
             });
-            grid.innerHTML += `<div class="member-card"><div class="member-header"><div class="avatar" style="background:${colores[i % colores.length]}">${name[0]}</div><h3>${name}</h3></div><div class="months-grid">${monthsHtml}</div><div class="m-footer"><div class="stat"><span>Ahorro</span><b style="color:var(--success)" id="s-${i}">$0</b></div><div class="stat"><span>Multas</span><b style="color:var(--primary)" id="f-${i}">$0</b></div><div class="stat"><span>Deuda</span><b style="color:var(--danger)" id="d-${i}">$0</b></div></div></div>`;
+            grid.innerHTML += `<div class="member-card"><div class="member-header"><div class="avatar" style="background:${colores[i % colores.length]}">${name[0]}</div><h3>${name}</h3></div><div class="months-grid">${monthsHtml}</div><div class="m-footer"><div class="stat"><span>Ahorro</span><b style="color:#2ecc71" id="s-${i}">$0</b></div><div class="stat"><span>Multas</span><b style="color:#e74c3c" id="f-${i}">$0</b></div><div class="stat"><span>Deuda</span><b style="color:#e74c3c" id="d-${i}">$0</b></div></div></div>`;
             calc(i);
         });
     }
 
-    // DINERO
     function tS(mI, moI, btn) { if(!isAdmin) return; btn.classList.toggle('active'); btn.innerText = btn.classList.contains('active') ? "✅" : "$100"; save(mI, moI); calc(mI); }
-    function tF(mI, moI, btn) { if(!isAdmin) return; const box = document.getElementById(`box-${mI}-${moI}`); if (!btn.classList.contains('owed') && !btn.classList.contains('paid')) { btn.classList.add('owed'); btn.innerText = "DEBE"; box.style.background = "#fff5f5"; } else if (btn.classList.contains('owed')) { btn.classList.remove('owed'); btn.classList.add('paid'); btn.innerText = "PAGÓ"; box.style.background = "#f0fff4"; } else { btn.classList.remove('paid'); btn.innerText = "MULTA"; box.style.background = "#fafafa"; } save(mI, moI); calc(mI); }
+    function tF(mI, moI, btn) { if(!isAdmin) return; const box = document.getElementById(`box-${mI}-${moI}`); if (!btn.classList.contains('owed') && !btn.classList.contains('paid')) { btn.classList.add('owed'); btn.innerText = "DEBE"; box.style.background = "#fff5f5"; } else if (btn.classList.contains('owed')) { btn.classList.remove('owed'); btn.classList.add('paid'); btn.innerText = "PAGÓ"; box.style.background = "#f0fff4"; } else { btn.classList.remove('paid'); btn.innerText = "MULTA"; box.style.background = "#f8fafc"; } save(mI, moI); calc(mI); }
     function save(mI, moI) { const bS = document.querySelector(`#box-${mI}-${moI} .btn-s`); const bM = document.querySelector(`#box-${mI}-${moI} .btn-m`); let fS = bM.classList.contains('owed') ? 'd' : (bM.classList.contains('paid') ? 'p' : 'n'); db[`${mI}-${moI}`] = { p: bS.classList.contains('active'), f: fS }; localStorage.setItem('familia_ahorro_v4', JSON.stringify(db)); }
     function calc(mI) { const card = document.querySelectorAll('.member-card')[mI]; const s = card.querySelectorAll('.btn-s.active').length * 100; const fp = card.querySelectorAll('.btn-m.paid').length * 50; const fd = card.querySelectorAll('.btn-m.owed').length * 50; document.getElementById(`s-${mI}`).innerText = `$${s}`; document.getElementById(`f-${mI}`).innerText = `$${fp}`; document.getElementById(`d-${mI}`).innerText = `$${fd}`; upGl(); }
     function upGl() { let ts = 0, tf = 0; document.querySelectorAll('[id^="s-"]').forEach(e => ts += parseInt(e.innerText.replace('$',''))); document.querySelectorAll('[id^="f-"]').forEach(e => tf += parseInt(e.innerText.replace('$',''))); document.getElementById('g-savings').innerText = `$${ts}`; document.getElementById('g-fines').innerText = `$${tf}`; document.getElementById('g-total').innerText = `$${ts + tf}`; }
-
-    // LOGIN
     function openModal() { document.getElementById('login-overlay').style.display = 'flex'; }
     function closeModal() { document.getElementById('login-overlay').style.display = 'none'; }
-    function checkPassword() { if(document.getElementById('pass-input').value === CLAVE){ isAdmin = true; document.body.classList.add('is-admin'); document.getElementById('lock-btn').innerText = "🔓"; document.getElementById('lock-btn').style.background = "var(--success)"; document.getElementById('pass-input').value = ""; } else { alert("Clave incorrecta"); } }
+    function checkPassword() { if(document.getElementById('pass-input').value === CLAVE){ isAdmin = true; document.body.classList.add('is-admin'); document.getElementById('lock-btn').innerText = "🔓"; document.getElementById('lock-btn').style.background = "#2ecc71"; document.getElementById('pass-input').value = ""; } else { alert("Clave incorrecta"); } }
     function logout() { isAdmin = false; document.body.classList.remove('is-admin'); document.getElementById('lock-btn').innerText = "🔑"; document.getElementById('lock-btn').style.background = "var(--accent)"; closeModal(); }
 
-    // FUNCIONES GOOGLE SHEETS
     async function saveToCloud() {
-        if(SCRIPT_URL.includes("TU_URL")) return alert("Primero debes pegar la URL de tu Script en el código.");
-        alert("Enviando datos a Google Sheets...");
-        try {
-            await fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify(db)
-            });
-            alert("✅ Guardado en la nube correctamente.");
-        } catch (e) {
-            alert("❌ Error al guardar.");
-        }
+        if(SCRIPT_URL.includes("TU_URL")) return alert("Configura la URL de Google Sheets");
+        try { await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(db) }); alert("✅ Guardado en la nube."); } catch (e) { alert("❌ Error."); }
     }
-
     async function loadFromCloud() {
-        if(SCRIPT_URL.includes("TU_URL")) return alert("Primero debes pegar la URL de tu Script en el código.");
-        alert("Descargando datos de Google Sheets...");
+        if(SCRIPT_URL.includes("TU_URL")) return alert("Configura la URL de Google Sheets");
         try {
             const response = await fetch(SCRIPT_URL);
             const text = await response.text();
-            if(text && text.length > 5) {
-                db = JSON.parse(text);
-                localStorage.setItem('familia_ahorro_v4', JSON.stringify(db));
-                alert("✅ Datos sincronizados. La página se recargará.");
-                location.reload();
-            } else {
-                alert("⚠️ No se encontró respaldo en la nube.");
-            }
-        } catch (e) {
-            alert("❌ Error al conectar con Google.");
-        }
+            if(text && text.length > 5) { db = JSON.parse(text); localStorage.setItem('familia_ahorro_v4', JSON.stringify(db)); location.reload(); }
+        } catch (e) { alert("❌ Error."); }
     }
 
     init();
