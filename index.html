@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐷 Ahorro Familiar 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #4ecdc4;
+            --accent: #ffe66d;
+            --success: #70e000;
+            --danger: #ff4757;
+            --bg: #fdf2f2;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(#ffccd5 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            margin: 0; padding: 20px;
+            color: #444;
+        }
+
+        /* LOGIN */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 107, 107, 0.9); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+        }
+        .login-box { 
+            background: white; padding: 40px; border-radius: 40px; text-align: center; 
+            max-width: 320px; width: 90%; border: 6px solid var(--accent);
+        }
+        .login-box input { 
+            width: 100%; padding: 15px; margin: 20px 0; border: 3px solid #eee; 
+            border-radius: 20px; text-align: center; font-size: 1.2rem; font-family: inherit;
+        }
+        .login-box button { 
+            background: var(--secondary); color: white; border: none; padding: 15px; 
+            border-radius: 20px; width: 100%; cursor: pointer; font-weight: 700;
+        }
+
+        .auth-trigger {
+            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+            background: var(--accent); border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; z-index: 500; font-size: 1.5rem;
+            box-shadow: 0 8px 0 #e6cc5c; border: none;
+        }
+
+        /* HEADER */
+        .container { max-width: 1300px; margin: 0 auto; }
+        
+        header {
+            background: white; padding: 30px; border-radius: 40px;
+            box-shadow: 0 12px 0 #eee; margin-bottom: 40px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+        }
+
+        .header-info h1 { margin: 0; font-size: 2.2rem; color: var(--primary); text-shadow: 2px 2px 0px var(--accent); }
+
+        .vault-wrap { display: flex; gap: 12px; flex-wrap: wrap; }
+        .v-card {
+            background: #fff; padding: 12px 18px; border-radius: 22px; border: 3px solid #f0f0f0;
+            text-align: center; min-width: 130px;
+        }
+        .v-card.total { background: var(--secondary); border-color: #3dbfb7; color: white; }
+        .v-card small { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 2px; }
+        .v-card b { font-size: 1.4rem; }
+
+        /* CARDS */
+        .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        .member-card { 
+            background: white; border-radius: 35px; padding: 25px; 
+            box-shadow: 0 10px 0 #f0f0f0; border: 2px solid #f9f9f9;
+        }
+
+        .member-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .avatar { 
+            width: 45px; height: 45px; border-radius: 50%; 
+            color: white; display: flex; align-items: center; justify-content: center; 
+            font-weight: 700; font-size: 1.1rem;
+        }
+
+        .months-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .m-box { 
+            background: #fafafa; border-radius: 18px; padding: 8px 4px; 
+            display: flex; flex-direction: column; gap: 4px; align-items: center;
+            border: 2px solid #f0f0f0;
+        }
+        .m-name { font-size: 0.65rem; font-weight: 700; color: #ccc; text-transform: uppercase; }
+
+        .btn { 
+            width: 85%; border: none; border-radius: 10px; padding: 4px 0; 
+            font-size: 0.6rem; font-weight: 700; font-family: inherit; cursor: default; pointer-events: none;
+        }
+        body.is-admin .btn { cursor: pointer; pointer-events: auto; }
+        .btn-s { background: #eee; color: #aaa; }
+        .btn-s.active { background: var(--success); color: white; box-shadow: 0 3px 0 #5dbd00; }
+        .btn-m { background: #eee; color: #aaa; }
+        .btn-m.owed { background: var(--danger); color: white; box-shadow: 0 3px 0 #d63031; }
+        .btn-m.paid { background: var(--accent); color: #856404; box-shadow: 0 3px 0 #e6cc5c; }
+
+        .m-footer {
+            margin-top: 20px; padding-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 5px; border-top: 2px dashed #eee;
+        }
+        .stat { text-align: center; }
+        .stat span { display: block; font-size: 0.55rem; font-weight: 700; color: #bbb; text-transform: uppercase; }
+        .stat b { font-size: 0.95rem; }
+
+        @media (max-width: 600px) { .months-grid { grid-template-columns: repeat(3, 1fr); } }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h2>🔑 ¿Eres el Administrador?</h2>
+        <input type="password" id="pass-input" placeholder="Ingresa la clave">
+        <button onclick="checkPassword()">Acceder</button>
+    </div>
+</div>
+
+<button id="auth-btn" class="auth-trigger" onclick="handleAuthClick()">🔑</button>
+
+<div class="container">
+    <header>
+        <div class="header-info">
+            <h1>🐷 Ahorro 2026</h1>
+            <p style="margin:0; opacity: 0.7;">¡Hola familia! 👋</p>
+        </div>
+        <div class="vault-wrap">
+            <div class="v-card"><small>💰 Ahorro</small><b id="g-savings" style="color:var(--success)">$0</b></div>
+            <div class="v-card"><small>⚠️ Multas</small><b id="g-fines" style="color:var(--primary)">$0</b></div>
+            <div class="v-card total"><small>✨ TOTAL</small><b id="g-total">$0</b></div>
+        </div>
+    </header>
+
+    <div class="members-grid" id="members-grid"></div>
+</div>
+
+<script>
+    const CLAVE = "1234";
+    // Nombres actualizados
+    const integrantes = [
+        "Eduardo", "Esperanza", "Yunuen", "Héctor", "Liliana", 
+        "Fabían", "Lalo", "Memo", "Alberto", "Cintya", 
+        "Uziel", "Adilenne", "Gibrán"
+    ];
+    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    const colores = ['#ff6b6b', '#4ecdc4', '#ff9f43', '#6a89cc', '#f8a5c2', '#3dc1d3', '#e77f67', '#8e44ad', '#27ae60'];
+    
+    let isAdmin = false;
+    // Usamos una versión de DB específica para que no se mezcle con datos anteriores
+    let db = JSON.parse(localStorage.getItem('familia_ahorro_final_2026')) || {};
+
+    function init() {
+        const grid = document.getElementById('members-grid');
+        grid.innerHTML = '';
+        integrantes.forEach((name, i) => {
+            let monthsHtml = '';
+            meses.forEach((mes, m) => {
+                const st = db[`${i}-${m}`] || { p: false, f: 'n' };
+                const sCls = st.p ? 'active' : '';
+                const fCls = st.f === 'd' ? 'owed' : (st.f === 'p' ? 'paid' : '');
+                const fTxt = st.f === 'd' ? 'DEBE' : (st.f === 'p' ? 'PAGÓ' : 'MULTA');
+                
+                monthsHtml += `
+                    <div class="m-box" id="box-${i}-${m}" style="background:${st.f==='d'?'#fff5f5':(st.f==='p'?'#f0fff4':'#fafafa')}">
+                        <span class="m-name">${mes}</span>
+                        <button class="btn btn-s ${sCls}" onclick="tS(${i},${m},this)">${st.p?'✅':'$100'}</button>
+                        <button class="btn btn-m ${fCls}" onclick="tF(${i},${m},this)">${fTxt}</button>
+                    </div>`;
+            });
+
+            grid.innerHTML += `
+                <div class="member-card">
+                    <div class="member-header">
+                        <div class="avatar" style="background:${colores[i % colores.length]}">${name[0]}</div>
+                        <h3>${name}</h3>
+                    </div>
+                    <div class="months-grid">${monthsHtml}</div>
+                    <div class="m-footer">
+                        <div class="stat"><span>Ahorro</span><b style="color:var(--success)" id="s-${i}">$0</b></div>
+                        <div class="stat"><span>Multas</span><b style="color:var(--primary)" id="f-${i}">$0</b></div>
+                        <div class="stat"><span>Pendiente</span><b style="color:var(--danger)" id="d-${i}">$0</b></div>
+                    </div>
+                </div>`;
+            calc(i);
+        });
+    }
+
+    function tS(mI, moI, btn) {
+        if(!isAdmin) return;
+        btn.classList.toggle('active');
+        btn.innerText = btn.classList.contains('active') ? "✅" : "$100";
+        save(mI, moI); calc(mI);
+    }
+
+    function tF(mI, moI, btn) {
+        if(!isAdmin) return;
+        const box = document.getElementById(`box-${mI}-${moI}`);
+        if (!btn.classList.contains('owed') && !btn.classList.contains('paid')) {
+            btn.classList.add('owed'); btn.innerText = "DEBE"; box.style.background = "#fff5f5";
+        } else if (btn.classList.contains('owed')) {
+            btn.classList.remove('owed'); btn.classList.add('paid'); btn.innerText = "PAGÓ"; box.style.background = "#f0fff4";
+        } else {
+            btn.classList.remove('paid'); btn.innerText = "MULTA"; box.style.background = "#fafafa";
+        }
+        save(mI, moI); calc(mI);
+    }
+
+    function save(mI, moI) {
+        const bS = document.querySelector(`#box-${mI}-${moI} .btn-s`);
+        const bM = document.querySelector(`#box-${mI}-${moI} .btn-m`);
+        let fS = bM.classList.contains('owed') ? 'd' : (bM.classList.contains('paid') ? 'p' : 'n');
+        db[`${mI}-${moI}`] = { p: bS.classList.contains('active'), f: fS };
+        localStorage.setItem('familia_ahorro_final_2026', JSON.stringify(db));
+    }
+
+    function calc(mI) {
+        const card = document.querySelectorAll('.member-card')[mI];
+        const s = card.querySelectorAll('.btn-s.active').length * 100;
+        const fp = card.querySelectorAll('.btn-m.paid').length * 50;
+        const fd = card.querySelectorAll('.btn-m.owed').length * 50;
+        document.getElementById(`s-${mI}`).innerText = `$${s}`;
+        document.getElementById(`f-${mI}`).innerText = `$${fp}`;
+        document.getElementById(`d-${mI}`).innerText = `$${fd}`;
+        upGl();
+    }
+
+    function upGl() {
+        let ts = 0, tf = 0;
+        document.querySelectorAll('[id^="s-"]').forEach(e => ts += parseInt(e.innerText.replace('$','')));
+        document.querySelectorAll('[id^="f-"]').forEach(e => tf += parseInt(e.innerText.replace('$','')));
+        document.getElementById('g-savings').innerText = `$${ts}`;
+        document.getElementById('g-fines').innerText = `$${tf}`;
+        document.getElementById('g-total').innerText = `$${ts + tf}`;
+    }
+
+    function handleAuthClick() {
+        if(isAdmin){ isAdmin=false; document.body.classList.remove('is-admin'); document.getElementById('auth-btn').innerText="🔑"; }
+        else { document.getElementById('login-overlay').style.display='flex'; }
+    }
+
+    function checkPassword() {
+        if(document.getElementById('pass-input').value === CLAVE){
+            isAdmin=true; document.body.classList.add('is-admin'); document.getElementById('login-overlay').style.display='none';
+            document.getElementById('auth-btn').innerText="🔓"; document.getElementById('pass-input').value="";
+        } else { alert("¡Clave incorrecta!"); }
+    }
+
+    init();
+</script>
+
+</body>
+</html>
